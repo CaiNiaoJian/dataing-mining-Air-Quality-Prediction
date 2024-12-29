@@ -1,0 +1,135 @@
+% !TEX program = xelatex
+\documentclass[a4paper, 12pt]{article}
+
+% 导入必要的包
+\usepackage{ctex}                 % 中文支持
+\usepackage{graphicx}            % 图片支持
+\usepackage{amsmath}             % 数学公式
+\usepackage{booktabs}            % 表格美化
+\usepackage{hyperref}            % 超链接
+\usepackage{geometry}            % 页面设置
+\usepackage[numbers,sort&compress]{gbt7714}              % 中文参考文献样式
+\usepackage{xcolor}              % 颜色支持
+\usepackage{listings}            % 代码列表
+\usepackage{float}               % 图表浮动体
+\usepackage{caption}             % 图表标题
+\usepackage{subcaption}          % 子图表标题
+\usepackage{array}               % 表格扩展
+\usepackage{fontspec}            % 字体设置
+
+% 页面设置
+\geometry{top=2.54cm, bottom=2.54cm, left=3.18cm, right=3.18cm}
+
+% 超链接设置
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+    citecolor=green
+}
+
+% 代码列表设置
+\lstset{
+    frame=single,
+    breaklines=true,
+    numbers=left,
+    numberstyle=\tiny,
+    numbersep=5pt,
+    showstringspaces=false,
+    basicstyle=\small\ttfamily,
+    keywordstyle=\color{blue},
+    commentstyle=\color{gray},
+    stringstyle=\color{red},
+    tabsize=4
+}
+
+% 设置字体
+\setmainfont{Times New Roman}
+
+\begin{document}
+
+% 封面页
+\thispagestyle{empty}
+\begin{center}
+    \textbf{\LARGE 中国矿业大学计算机学院} \\
+    \vspace{0.8cm}
+    \textbf{\Large 2022 级本科生课程报告}
+\end{center}
+
+\vspace{2cm}
+
+\begin{center}
+    \begin{tabular}{rl}
+        \textbf{课程名称：} & 数据挖掘基础 \\[0.5cm]
+        \textbf{报告题目：} & 回归算法原理与应用 \\[0.5cm]
+        \textbf{报告时间：} & 2024.12.29 \\[0.5cm]
+        \textbf{学生姓名：} & 高健 \\[0.5cm]
+        \textbf{学号：} & 08222220 \\[0.5cm]
+        \textbf{专业：} & 数据科学与大数据 \\[0.5cm]
+        \textbf{任课教师：} & 祝汉城
+    \end{tabular}
+\end{center}
+
+\newpage
+
+% 评分表
+\thispagestyle{empty}
+\begin{center}
+    \textbf{\Large 课程报告成绩评定及评分依据}
+\end{center}
+
+\vspace{1cm}
+
+\begin{center}
+    \begin{tabular}{|c|p{12cm}|c|c|}
+        \hline
+        \rule{0pt}{1.2cm}序号 & 评分依据 & 分值 & 实际得分 \\
+        \hline
+        \rule{0pt}{1.5cm}1 & 课程报告描述了数据挖掘技术或算法的基本原理 & 20 & \\
+        \hline
+        \rule{0pt}{1.5cm}2 & 课程报告详细描述了待解决的问题，如有可能参考教材给出解决问题的过程 & 30 & \\
+        \hline
+        \rule{0pt}{1.5cm}3 & 课程报告使用Python程序设计语言（附源代码）对待解决问题进行了实验，给出了相关实验结果或可视化结果 & 40 & \\
+        \hline
+        \rule{0pt}{1.5cm}4 & 课程报告给出了个人学习体会 & 10 & \\
+        \hline
+        \rule{0pt}{1.2cm} & \multicolumn{2}{|c|}{总分} & \\
+        \hline
+    \end{tabular}
+\end{center}
+
+\vspace{2cm}
+
+\begin{center}
+    \begin{tabular}{p{15cm}}
+        \textbf{教师评语：} \\[3cm]
+        \hline
+        \\[0.5cm]
+        \textbf{教师签名：}\underline{\hspace{5cm}} \quad 年 \quad 月 \quad 日
+    \end{tabular}
+\end{center}
+
+\newpage
+
+% 正文部分
+\setcounter{page}{1}  % 重置页码
+\tableofcontents
+\newpage
+
+% 导入各章节
+\input{sections/abstract}         % 摘要
+\input{sections/introduction}     % 引言
+\input{sections/methodology}      % 方法
+\input{sections/results}          % 结果
+\input{sections/discussion}       % 讨论
+\input{sections/conclusion}       % 结论
+
+% 参考文献
+\bibliographystyle{gbt7714-numerical}
+\bibliography{references/bibliography}
+
+% 附录
+\input{sections/appendix}         % Python源代码
+
+\end{document} 

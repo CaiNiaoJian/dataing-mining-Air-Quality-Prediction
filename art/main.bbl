@@ -1,0 +1,38 @@
+\begin{thebibliography}{4}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{#1}
+\expandafter\ifx\csname urlstyle\endcsname\relax\else
+  \urlstyle{same}\fi
+\expandafter\ifx\csname href\endcsname\relax
+  \DeclareUrlCommand\doi{\urlstyle{rm}}
+  \def\eprint#1#2{#2}
+\else
+  \def\doi#1{\href{https://doi.org/#1}{\nolinkurl{#1}}}
+  \let\eprint\href
+\fi
+
+\bibitem[Zhang et~al.(2020)Zhang and Ding]{zhang2020air}
+ZHANG J, DING W.
+\newblock Air quality prediction using machine learning methods\allowbreak[J].
+\newblock Journal of Environmental Sciences, 2020, 85: 11-23.
+
+\bibitem[Kim et~al.(2019)Kim and Park]{kim2019hybrid}
+KIM S, PARK H.
+\newblock Hybrid approach combining statistical and machine learning methods
+  for air quality prediction\allowbreak[J].
+\newblock Journal of Environmental Management, 2019, 241: 168-177.
+
+\bibitem[Hastie et~al.(2009)Hastie, Tibshirani, and
+  Friedman]{hastie2009elements}
+HASTIE T, TIBSHIRANI R, FRIEDMAN J.
+\newblock The elements of statistical learning: data mining, inference, and
+  prediction\allowbreak[M].
+\newblock Springer Science \& Business Media, 2009.
+
+\bibitem[Li et~al.(2021)Li, Chen, and Wang]{li2021comparative}
+LI X, CHEN H, WANG H.
+\newblock Comparative study of machine learning algorithms for air quality
+  forecasting\allowbreak[J].
+\newblock Atmospheric Environment, 2021, 245: 118-129.
+
+\end{thebibliography}

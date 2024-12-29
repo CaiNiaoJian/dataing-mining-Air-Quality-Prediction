@@ -1,0 +1,279 @@
+\appendix
+\section{Python源代码实现}
+
+\subsection{数据预处理代码}
+\begin{lstlisting}[language=Python, caption=数据预处理实现, label=lst:preprocessing]
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.impute import SimpleImputer
+
+def load_data(file_path):
+    """加载数据集"""
+    df = pd.read_csv(file_path)
+    print(f"Dataset shape: {df.shape}")
+    return df
+
+def handle_missing_values(df):
+    """处理缺失值"""
+    # 创建简单填充器
+    imputer = SimpleImputer(strategy='mean')
+    # 对数值列进行填充
+    numeric_columns = df.select_dtypes(include=[np.number]).columns
+    df[numeric_columns] = imputer.fit_transform(df[numeric_columns])
+    return df
+
+def handle_outliers(df, columns, n_std=3):
+    """处理异常值"""
+    for column in columns:
+        mean = df[column].mean()
+        std = df[column].std()
+        # 使用3倍标准差法识别异常值
+        df[column] = df[column].clip(mean - n_std * std, 
+                                   mean + n_std * std)
+    return df
+
+def feature_engineering(df):
+    """特征工程"""
+    # 时间特征提取
+    df['year'] = pd.to_datetime(df['date']).dt.year
+    df['month'] = pd.to_datetime(df['date']).dt.month
+    df['day'] = pd.to_datetime(df['date']).dt.day
+    df['hour'] = df['hour']
+    df['dayofweek'] = pd.to_datetime(df['date']).dt.dayofweek
+    df['is_weekend'] = df['dayofweek'].isin([5, 6]).astype(int)
+    
+    # 风向编码
+    df = pd.get_dummies(df, columns=['cbwd'], prefix='cbwd')
+    
+    return df
+
+def normalize_features(df, feature_columns):
+    """特征标准化"""
+    scaler = StandardScaler()
+    df[feature_columns] = scaler.fit_transform(df[feature_columns])
+    return df, scaler
+
+def preprocess_pipeline(train_path, test_path):
+    """预处理流水线"""
+    # 加载数据
+    train_df = load_data(train_path)
+    test_df = load_data(test_path)
+    
+    # 处理缺失值
+    train_df = handle_missing_values(train_df)
+    test_df = handle_missing_values(test_df)
+    
+    # 特征工程
+    train_df = feature_engineering(train_df)
+    test_df = feature_engineering(test_df)
+    
+    # 处理异常值
+    numeric_features = ['DEWP', 'TEMP', 'PRES', 'Iws', 'Is', 'Ir']
+    train_df = handle_outliers(train_df, numeric_features)
+    test_df = handle_outliers(test_df, numeric_features)
+    
+    # 特征标准化
+    train_df, scaler = normalize_features(train_df, numeric_features)
+    test_df[numeric_features] = scaler.transform(test_df[numeric_features])
+    
+    return train_df, test_df
+\end{lstlisting}
+
+\subsection{模型训练代码}
+\begin{lstlisting}[language=Python, caption=模型训练实现, label=lst:model_training]
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.svm import SVR
+from sklearn.neural_network import MLPRegressor
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
+import numpy as np
+
+class ModelTrainer:
+    def __init__(self):
+        self.models = {
+            'rf': RandomForestRegressor(),
+            'dt': DecisionTreeRegressor(),
+            'svr': SVR(),
+            'nn': MLPRegressor()
+        }
+        self.best_model = None
+        self.best_params = None
+        
+    def train_random_forest(self, X_train, y_train):
+        """训练随机森林模型"""
+        param_grid = {
+            'n_estimators': [100, 200, 300],
+            'max_depth': [10, 20, 30, None],
+            'min_samples_split': [2, 5, 10]
+        }
+        rf = GridSearchCV(RandomForestRegressor(), param_grid, cv=5)
+        rf.fit(X_train, y_train)
+        return rf.best_estimator_, rf.best_params_
+    
+    def train_decision_tree(self, X_train, y_train):
+        """训练决策树模型"""
+        param_grid = {
+            'max_depth': [10, 20, 30, None],
+            'min_samples_split': [2, 5, 10],
+            'min_samples_leaf': [1, 2, 4]
+        }
+        dt = GridSearchCV(DecisionTreeRegressor(), param_grid, cv=5)
+        dt.fit(X_train, y_train)
+        return dt.best_estimator_, dt.best_params_
+    
+    def train_svr(self, X_train, y_train):
+        """训练支持向量回归模型"""
+        param_grid = {
+            'C': [0.1, 1, 10],
+            'kernel': ['rbf', 'linear'],
+            'epsilon': [0.1, 0.2, 0.3]
+        }
+        svr = GridSearchCV(SVR(), param_grid, cv=5)
+        svr.fit(X_train, y_train)
+        return svr.best_estimator_, svr.best_params_
+    
+    def train_neural_network(self, X_train, y_train):
+        """训练神经网络模型"""
+        param_grid = {
+            'hidden_layer_sizes': [(100,), (100, 50), (100, 50, 25)],
+            'activation': ['relu', 'tanh'],
+            'alpha': [0.0001, 0.001, 0.01]
+        }
+        nn = GridSearchCV(MLPRegressor(max_iter=1000), param_grid, cv=5)
+        nn.fit(X_train, y_train)
+        return nn.best_estimator_, nn.best_params_
+    
+    def evaluate_model(self, model, X_test, y_test):
+        """评估模型性能"""
+        predictions = model.predict(X_test)
+        mse = mean_squared_error(y_test, predictions)
+        rmse = np.sqrt(mse)
+        mae = mean_absolute_error(y_test, predictions)
+        r2 = r2_score(y_test, predictions)
+        
+        return {
+            'RMSE': rmse,
+            'MAE': mae,
+            'R2': r2
+        }
+\end{lstlisting}
+
+\subsection{可视化代码}
+\begin{lstlisting}[language=Python, caption=可视化实现, label=lst:visualization]
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+class Visualizer:
+    def __init__(self):
+        plt.style.use('seaborn')
+        
+    def plot_feature_importance(self, model, feature_names):
+        """绘制特征重要性图"""
+        importances = model.feature_importances_
+        indices = np.argsort(importances)[::-1]
+        
+        plt.figure(figsize=(10, 6))
+        plt.title('特征重要性排序')
+        plt.bar(range(len(indices)), importances[indices])
+        plt.xticks(range(len(indices)), 
+                  [feature_names[i] for i in indices], 
+                  rotation=45)
+        plt.tight_layout()
+        plt.savefig('images/feature_importance.png')
+        plt.close()
+    
+    def plot_prediction_vs_actual(self, y_true, y_pred):
+        """绘制预测值与实际值对比图"""
+        plt.figure(figsize=(10, 6))
+        plt.scatter(y_true, y_pred, alpha=0.5)
+        plt.plot([y_true.min(), y_true.max()], 
+                [y_true.min(), y_true.max()], 
+                'r--', lw=2)
+        plt.xlabel('实际值')
+        plt.ylabel('预测值')
+        plt.title('预测值与实际值对比')
+        plt.tight_layout()
+        plt.savefig('images/prediction_comparison.png')
+        plt.close()
+    
+    def plot_error_distribution(self, y_true, y_pred):
+        """绘制预测误差分布图"""
+        errors = y_pred - y_true
+        plt.figure(figsize=(10, 6))
+        sns.histplot(errors, kde=True)
+        plt.xlabel('预测误差')
+        plt.ylabel('频数')
+        plt.title('预测误差分布')
+        plt.tight_layout()
+        plt.savefig('images/error_distribution.png')
+        plt.close()
+    
+    def plot_correlation_matrix(self, df, features):
+        """绘制相关性矩阵热力图"""
+        corr = df[features].corr()
+        plt.figure(figsize=(12, 8))
+        sns.heatmap(corr, annot=True, cmap='coolwarm', center=0)
+        plt.title('特征相关性矩阵')
+        plt.tight_layout()
+        plt.savefig('images/correlation_matrix.png')
+        plt.close()
+\end{lstlisting}
+
+\subsection{主程序代码}
+\begin{lstlisting}[language=Python, caption=主程序实现, label=lst:main]
+def main():
+    # 数据预处理
+    train_df, test_df = preprocess_pipeline('train.csv', 'test.csv')
+    
+    # 准备特征和标签
+    feature_columns = ['DEWP', 'TEMP', 'PRES', 'Iws', 'Is', 'Ir',
+                      'year', 'month', 'day', 'hour', 'dayofweek', 
+                      'is_weekend', 'cbwd_NE', 'cbwd_NW', 'cbwd_SE', 
+                      'cbwd_cv']
+    X = train_df[feature_columns]
+    y = train_df['Label']
+    
+    # 划分训练集和验证集
+    X_train, X_val, y_train, y_val = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
+    
+    # 初始化模型训练器
+    trainer = ModelTrainer()
+    
+    # 训练各个模型
+    rf_model, rf_params = trainer.train_random_forest(X_train, y_train)
+    dt_model, dt_params = trainer.train_decision_tree(X_train, y_train)
+    svr_model, svr_params = trainer.train_svr(X_train, y_train)
+    nn_model, nn_params = trainer.train_neural_network(X_train, y_train)
+    
+    # 评估模型性能
+    models = {
+        'Random Forest': rf_model,
+        'Decision Tree': dt_model,
+        'SVR': svr_model,
+        'Neural Network': nn_model
+    }
+    
+    results = {}
+    for name, model in models.items():
+        results[name] = trainer.evaluate_model(model, X_val, y_val)
+    
+    # 可视化结果
+    visualizer = Visualizer()
+    visualizer.plot_feature_importance(rf_model, feature_columns)
+    visualizer.plot_prediction_vs_actual(y_val, rf_model.predict(X_val))
+    visualizer.plot_error_distribution(y_val, rf_model.predict(X_val))
+    visualizer.plot_correlation_matrix(train_df, feature_columns)
+    
+    # 预测测试集
+    test_predictions = rf_model.predict(test_df[feature_columns])
+    test_df['Predicted_Label'] = test_predictions
+    test_df[['ID', 'Predicted_Label']].to_csv('predictions.csv', 
+                                            index=False)
+
+if __name__ == "__main__":
+    main()
+\end{lstlisting} 

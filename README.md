@@ -90,7 +90,7 @@
    - 确保每条记录只有一个风向为1
 
 5. 异常值检测
-   - 使用���线图检测异常值
+   - 使用线图检测异常值
    - 计算各特征的异常值数量
    - 生成异常值分布图
 
@@ -320,3 +320,18 @@
   - 添加模型评估功能
   - 完成特征重要性分析
   - 生成模型评估可视化结果
+
+
+art/
+├── figures/          # 图片目录（无）
+├── sections/         # 章节文件目录
+│   ├── abstract.tex      # 摘要
+│   ├── introduction.tex  # 引言
+│   ├── methodology.tex   # 方法
+│   ├── results.tex       # 结果
+│   ├── discussion.tex    # 讨论
+│   └── conclusion.tex    # 结论
+├── references/       # 参考文献目录
+│   └── bibliography.bib  # 参考文献数据库
+├── styles/          # 样式文件目录
+└── main.tex         # 主文档
